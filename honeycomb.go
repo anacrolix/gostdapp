@@ -135,6 +135,7 @@ func ConfigureOpenTelemetryForHoneycomb(ctx context.Context) (cleanup func(), er
 	tp := trace.NewTracerProvider(
 		trace.WithBatcher(exp),
 		trace.WithResource(resource.NewSchemaless(flyAttrs...)),
+		trace.WithSampler(getHoneycombSampler()),
 	)
 
 	// Handle shutdown to ensure all sub processes are closed correctly and telemetry is exported
