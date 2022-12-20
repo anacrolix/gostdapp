@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
+	"github.com/honeycombio/honeycomb-opentelemetry-go"
 	_ "github.com/honeycombio/honeycomb-opentelemetry-go"
 	"github.com/honeycombio/opentelemetry-go-contrib/launcher"
 	"go.opentelemetry.io/otel"
@@ -49,6 +51,19 @@ func iterFlyAttrs(f func(key, value string)) {
 	emit("fly.app_name", "FLY_APP_NAME")
 }
 
+// Returns the sample that Honeycomb would derive via SAMPLE_RATE.
+func getHoneycombSampler() trace.Sampler {
+	sampleRateStr := os.Getenv("SAMPLE_RATE")
+	if sampleRateStr == "" {
+		return nil
+	}
+	sampleRate, err := strconv.Atoi(sampleRateStr)
+	if err != nil {
+		return nil
+	}
+	return honeycomb.NewDeterministicSampler(sampleRate)
+}
+
 // Performs steps at
 // https://docs.honeycomb.io/getting-data-in/opentelemetry/go-distro/#using-opentelemetry-without-the-honeycomb-distribution,
 // doesn't automatically configure for Honeycomb.
@@ -71,6 +86,7 @@ func ConfigureOpenTelemetryManually(ctx context.Context) (cleanup func(), err er
 	tp := trace.NewTracerProvider(
 		trace.WithBatcher(exp),
 		trace.WithResource(resource.NewSchemaless(flyAttrs...)),
+		trace.WithSampler(getHoneycombSampler()),
 	)
 
 	// Handle shutdown to ensure all sub processes are closed correctly and telemetry is exported
