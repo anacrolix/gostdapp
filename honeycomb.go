@@ -119,15 +119,22 @@ func configureOtel(ctx context.Context, clientOpts ...otlptracegrpc.Option) (cle
 	return
 }
 
+const honeycombApiKeyEnvVar = "HONEYCOMB_API_KEY"
+
 // Performs steps at
 // https://docs.honeycomb.io/getting-data-in/opentelemetry/go-distro/#using-opentelemetry-without-the-honeycomb-distribution,
 // and applies Honeycomb-style configuration from environment.
 func ConfigureOpenTelemetryForHoneycomb(ctx context.Context) (cleanup func(), err error) {
+	apiKey, ok := os.LookupEnv(honeycombApiKeyEnvVar)
+	if !ok {
+		err = fmt.Errorf("env var %q not set", honeycombApiKeyEnvVar)
+		return
+	}
 	// Configure a new OTLP exporter using environment variables for sending data to Honeycomb over gRPC
 	return configureOtel(ctx,
 		otlptracegrpc.WithEndpoint("api.honeycomb.io:443"),
 		otlptracegrpc.WithHeaders(map[string]string{
-			"x-honeycomb-team": os.Getenv("HONEYCOMB_API_KEY"),
+			"x-honeycomb-team": apiKey,
 		}),
 	)
 }
