@@ -13,7 +13,8 @@ import (
 
 // Deprecated: Use RunContext. Doesn't return on error.
 func Run(mainErr func() error) {
-	RunContext(func(ctx context.Context) error { return mainErr() })
+	// Can't wrap RunContext, because that hooks SIGINT and this mainErr won't see the cancellation.
+	handleMainReturning(mainErr())
 }
 
 // Doesn't return on error.
@@ -22,10 +23,13 @@ func RunContext(
 ) {
 	ctx, cancel := signalNotifyContextCause(context.Background(), os.Interrupt)
 	defer cancel(fmt.Errorf("RunOpts returned"))
-	err := mainErr(ctx)
+	handleMainReturning(mainErr(ctx))
+}
+
+func handleMainReturning(mainErr error) {
 	envpprof.Stop()
-	if err != nil {
-		log.Printf("error in main: %v%s", err, backtrace.Sprint(err))
+	if mainErr != nil {
+		log.Printf("error in main: %v%s", mainErr, backtrace.Sprint(mainErr))
 		os.Exit(1)
 	}
 }
