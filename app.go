@@ -25,9 +25,19 @@ func RunContext(
 }
 
 func handleMainReturning(mainErr error) {
+	code := OnMainReturned(mainErr)
+	if code != 0 {
+		os.Exit(code)
+	}
+}
+
+// Does the cleanup expected at the end of main, without exiting. Abstracting this out lets us
+// handle additions to cleanup behaviour in the future.
+func OnMainReturned(mainErr error) (exitCode int) {
 	envpprof.Stop()
 	if mainErr != nil {
 		log.Printf("error in main: %v%s", mainErr, backtrace.Sprint(mainErr))
-		os.Exit(1)
+		return 1
 	}
+	return 0
 }
