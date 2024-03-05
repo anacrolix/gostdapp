@@ -8,7 +8,6 @@ import (
 
 	"github.com/honeycombio/honeycomb-opentelemetry-go"
 	_ "github.com/honeycombio/honeycomb-opentelemetry-go"
-	"github.com/honeycombio/opentelemetry-go-contrib/launcher"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -22,23 +21,9 @@ import (
 // https://docs.honeycomb.io/getting-data-in/opentelemetry/go-distro/#automatic-instrumentation.
 // This is unreliable, for some reason it ignores SAMPLE_RATE, and doesn't report failure to export.
 func ConfigureOpenTelemetry() (cleanup func(), err error) {
-	cleanup = func() {}
-	resourceAttrs := make(map[string]string)
-	iterFlyAttrs(func(key, value string) {
-		resourceAttrs[key] = value
-	})
-	// Makes use of https://github.com/honeycombio/honeycomb-opentelemetry-go.
-	otelShutdown, err := launcher.ConfigureOpenTelemetry(
-		launcher.WithResourceAttributes(resourceAttrs),
-		//// Try to shake out marshalling errors. Doesn't seem to help.
-		//launcher.WithExporterProtocol(launcher.ProtocolHTTPProto),
-	)
-	if err != nil {
-		err = fmt.Errorf("setting up OTel SDK: %w", err)
-	} else {
-		cleanup = otelShutdown
-	}
-	return
+	// This used to use github.com/honeycombio/opentelemetry-go-contrib/launcher which has been
+	// dropped from newer versions.
+	return ConfigureOpenTelemetryForHoneycomb(context.Background())
 }
 
 func iterFlyAttrs(f func(key, value string)) {
