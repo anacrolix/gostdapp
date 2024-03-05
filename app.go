@@ -3,10 +3,11 @@ package app
 import (
 	"context"
 	"errors"
+	"os"
+
 	"github.com/anacrolix/backtrace"
 	"github.com/anacrolix/envpprof"
 	"github.com/anacrolix/log"
-	"os"
 )
 
 // Deprecated: Use RunContext. Doesn't return on error.
