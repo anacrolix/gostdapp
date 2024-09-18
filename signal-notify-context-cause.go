@@ -7,6 +7,16 @@ import (
 	"os/signal"
 )
 
+// Okay so errors.Is requires equality, which means implementing an Is method, or being a value
+// type.
+type SignalReceivedError struct {
+	Signal os.Signal
+}
+
+func (me SignalReceivedError) Error() string {
+	return fmt.Sprintf("signal received: %v", me.Signal)
+}
+
 // This is taken from the standard library, and modified to use context cancellation cause.
 func signalNotifyContextCause(parent context.Context, signals ...os.Signal) (ctx context.Context, stop context.CancelCauseFunc) {
 	ctx, cancel := context.WithCancelCause(parent)
@@ -21,7 +31,7 @@ func signalNotifyContextCause(parent context.Context, signals ...os.Signal) (ctx
 		go func() {
 			select {
 			case sig := <-c.ch:
-				c.cancel(fmt.Errorf("signal received: %v", sig))
+				c.cancel(SignalReceivedError{sig})
 			case <-c.Done():
 			}
 		}()
