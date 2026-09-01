@@ -3,12 +3,13 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log/slog"
 	"os"
 	"syscall"
 
 	"github.com/anacrolix/backtrace"
 	"github.com/anacrolix/envpprof"
-	"github.com/anacrolix/log"
 )
 
 // Deprecated: Use RunContext. Doesn't return on error.
@@ -44,7 +45,10 @@ func OnMainReturned(mainCtx context.Context, mainErr error) (exitCode int) {
 	if errors.Is(mainErr, context.Cause(mainCtx)) {
 		return 0
 	}
-	log.Levelf(log.Critical, "error in main: %v%s", mainErr, backtrace.Sprint(mainErr))
+	// The default logger, so that whatever the app configured is what this goes to. A backtrace
+	// belongs in the message rather than an attribute: it's several lines, and attribute values
+	// get escaped onto one.
+	slog.Error(fmt.Sprintf("error in main: %v%s", mainErr, backtrace.Sprint(mainErr)))
 	// Here we could extract an exit code from errors that have an ExitCoder interface.
 	var sigErr SignalReceivedError
 	if errors.As(mainErr, &sigErr) {

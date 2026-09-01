@@ -5,7 +5,6 @@ go 1.24.0
 require (
 	github.com/anacrolix/backtrace v0.0.0-20221205112523-22a61db8f82e
 	github.com/anacrolix/envpprof v1.4.0
-	github.com/anacrolix/log v0.17.0
 	github.com/honeycombio/honeycomb-opentelemetry-go v0.11.0
 	go.opentelemetry.io/otel v1.38.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.38.0
@@ -15,6 +14,7 @@ require (
 
 require (
 	github.com/anacrolix/generics v0.1.0 // indirect
+	github.com/anacrolix/log v0.17.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/ebitengine/purego v0.9.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
